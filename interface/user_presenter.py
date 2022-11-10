@@ -5,10 +5,13 @@
 from db import db_user
 from lib import common
 
+log = common.get_logger("用户模块")
+
 
 def register(user_name, user_pwd):
     old_user = db_user.query(user_name)
     if old_user:
+        log.info("注册失败，用户名已经存在")
         return False, "注册失败，用户名已经存在"
     user = {
         "user_name": user_name,
@@ -17,6 +20,7 @@ def register(user_name, user_pwd):
         "lock": False
     }
     db_user.save(user)
+    log.info("注册成功")
     return True, "注册成功"
 
 
@@ -24,12 +28,15 @@ def login(user_name, user_pwd):
     old_user = db_user.query(user_name)
     if old_user:
         pwd = common.get_md5_pwd(user_pwd)
-        if pwd == old_user.get('user_pwd'):
+        if pwd == old_user.get('user_pwd'):  # 等价于  old_user['user_pwd']
+            log.info("登录成功")
             return True, old_user
         else:
+            log.info("密码错误")
             return False, "密码错误"
 
     else:
+        log.info("用户未注册")
         return False, "用户未注册"
 
 
